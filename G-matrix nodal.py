@@ -1,8 +1,5 @@
 """This python code is to calculate the node voltages in a circuit using nodal analysis. Because it is a lot of calculations involving numerous linear algebra and diffrential equations this python code was used to calculate the node voltages."""
 
-
-
-
 import numpy as np
 #the conductance matrix
 """G=[Gs0+G01+G02+G03 -G01 -G02 -G03]
