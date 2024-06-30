@@ -18,7 +18,7 @@ S_array= np.array(S)
 
 #The line to line current (A) in different measurments
 IL= [3.43, 3.33, 3.21, 3.07, 2.92, 2.93, 2.87, 2.88, 2.94, 2.98, 3.13]
-IL_array= np.array(IL
+IL_array= np.array(IL)
 
 #The phase current (A) that because it is calculated in a delta configured induction machine is devided by sqrt(3)
 Is=IL_array/np.sqrt(3)
