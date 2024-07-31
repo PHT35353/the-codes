@@ -1,0 +1,53 @@
+import pandas as pd
+
+# Dit is om alle rows te laten zien van de data bij de output
+pd.set_option('display.max_rows', None)
+
+# De gebruikte excel files laden (Bij deze voorbeeld heb ik de day-ahead data gebruikt)
+file_2023 = '/content/day-ahead prices 2023.xlsx' # hier moet u u eigen datapath zetten
+file_2024 = '/content/day-ahead prices 2024.xlsx' # hier moet u u eigen datapath zetten
+
+# Lezen van de data bij excel files. Ook hier wordt row 4 genegeerd want er is metadata daarin dat onbelangrijk is.
+prijzen_2023 = pd.read_excel(file_2023, skiprows=4)
+prijzen_2024 = pd.read_excel(file_2024, skiprows=4)
+
+# Bij hier worden de eerste twee rows en hun namen uitgehaald
+prijzen_2023_c = prijzen_2023.drop([0, 1]).reset_index(drop=True)
+prijzen_2024_c = prijzen_2024.drop([0, 1]).reset_index(drop=True)
+
+# Na het uithalen van de naam van de eerste twee rows worden er hier nieuwe namen gegeven voor beter begrijpen
+prijzen_2023_c.columns = ['Tijd', 'Prijs_EUR_per_MWh', 'Currency']
+prijzen_2024_c.columns = ['Tijd', 'Prijs_EUR_per_MWh', 'Currency']
+
+# De currency column wordt uitgehaald want het is wel vastgelegd in euro
+prijzen_2023_c = prijzen_2023_c.drop(columns=['Currency'])
+prijzen_2024_c = prijzen_2024_c.drop(columns=['Currency'])
+
+# Hier wordt de Prijs_EUR_per_MWh column omgezet naar numeric en letters die error geven worden als NaN(Not a Number) gezien
+prijzen_2023_c['Prijs_EUR_per_MWh'] = pd.to_numeric(prijzen_2023_c['Prijs_EUR_per_MWh'], errors='coerce')
+prijzen_2024_c['Prijs_EUR_per_MWh'] = pd.to_numeric(prijzen_2024_c['Prijs_EUR_per_MWh'], errors='coerce')
+
+# Hier wordt de gas prijs per kWh berekend van 0.30 euro per m^3 en 1 m^3=9.796 kWh
+gas_prijs= 0.30/9.796 #in kWh
+
+# Hier wordt er gezien of op de ene moment volgens de data de gas-boiler of de E-boiler meer efficient is
+def efficient_boiler(electriciteit_prijs, gas_prijs):
+    if electriciteit_prijs < gas_prijs / 1000:  # Dit is om de gas prijs omzetten naar euro/MWh
+        return 'E-boiler'
+    else:
+        return 'Gas-boiler'
+
+# Hier worden alle omzetteingen die ik heb bij de vorige delen gedaan aangepast aan de gebruikte data sheets
+prijzen_2023_c['Efficient_Boiler'] = prijzen_2023_c['Prijs_EUR_per_MWh'].apply(efficient_boiler, gas_prijs=gas_prijs)
+prijzen_2024_c['Efficient_Boiler'] = prijzen_2024_c['Prijs_EUR_per_MWh'].apply(efficient_boiler, gas_prijs=gas_prijs)
+
+
+print("\nDe goede boiler bij 2023:")
+print(prijzen_2023_c)
+
+print("\nDe goede boiler bij 2024:")
+print(prijzen_2024_c)
+
+# Dit helpt doordat de data dat is gemaakt over welke boiler is meer efficient kan nu opgeslagen worden bij de gebruikte excelfile data
+prijzen_2023_c.to_excel('/content/day-ahead prices 2023.xlsx', index=False) # hier moet u u eigen datapath zetten
+prijzen_2024_c.to_excel('/content/day-ahead prices 2024.xlsx', index=False) # hier moet u u eigen datapath zetten
